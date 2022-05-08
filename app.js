@@ -10,8 +10,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require('mongoose');
-const encrypt = require("mongoose-encryption");
 
+const User = require("./models/user.js"); // password
+// const bcrypt = require("bcrypt");
+// const SALT_ROUNDS = 12;
 
 const app = express();
 
@@ -26,31 +28,56 @@ mongoose.connect("mongodb://localhost:27017/userDB");
 
 // 3. db
 // - create schema
-const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: [true, "cannot add a user without username"],
-        unique: true,
-        dropDups: true
-    },
+// const userSchema = new mongoose.Schema({
+//     username: {
+//         type: String,
+//         required: [true, "cannot add a user without username"],
+//         unique: true,
+//         dropDups: true
+//     },
 
-    password: {
-        type: String,
-        required: [true, "cannot add a user without password"]
-    },
-})
+//     password: {
+//         type: String,
+//         required: [true, "cannot add a user without password"]
+//     },
+// })
+
+// // 4. bcrypt every user passwords
+// userSchema.pre("save", async function preSave(next) {
+//     const user = this; // this is the document to be saved
+
+//     // if password has not been hashed
+//     if (!user.isModified("password")) {
+//         return next();
+//     } else {
+//         // else its a plain text
+//         try {
+//             const hash = await bcrypt.hash(user.password, SALT_ROUNDS);
+//             user.password = hash;
+//             return next();
+//         } catch (err) {
+//             return next(err);
+//         }
+//     }
+// });
 
 
-// encrypt password field
-userSchema.plugin(encrypt, {
-    secret: process.env.SECRET,
-    encryptedFields: ['password']
-});
+// // Create own compare password methods
+// userSchema.methods.comparePassword = function comparePassword(userInputpass, callback) {
+//     bcrypt.compare(userInputpass, this.password, function(error, isMatch) {
+//         if (error) {
+//             return callback(error);
+//         } else {
+//             callback(null, isMatch);
+//         }
+//     });
+// }
+// const User = mongoose.model("user", userSchema);
+// module.exports = User;
 
-// - create item class / model. This is a collection
-const User = mongoose.model("user", userSchema);
 
-// 4. router
+
+// 5. router
 app.get("/", function(reqFromClient, resToClient) {
     console.log("\n>>>>>>>>>>>>>>>> app.get/");
     resToClient.render("home");
@@ -103,7 +130,7 @@ app.post("/register", function(reqFromClient, resToClient) {
 
 
 app.post("/login", function(reqFromClient, resToClient) {
-    console.log("\n>>>>>>>>>>>>>>>> app.post/register");
+    console.log("\n>>>>>>>>>>>>>>>> app.post/login");
 
     // 1. create new object
     const usernameInput = reqFromClient.body.username; // from the name field of the input element
@@ -115,23 +142,23 @@ app.post("/login", function(reqFromClient, resToClient) {
         },
         function(err, foundUser) {
             // - inside this block, the password is decrypted
-
-
             if (err) {
                 console.log(err);
-                resToClient.redirect('/register');
+                resToClient.redirect('/login');
             } else {
                 if (foundUser) {
-                    console.log("found pass: " + foundUser.password);
                     // - if same password
-                    if (foundUser.password === passwordInput) {
-
-                        resToClient.render("secrets");
-                    } else {
-                        console.log("wrong password");
-                        resToClient.redirect("/register");
-                    }
-
+                    foundUser.comparePassword(passwordInput, function(matchError, isMatch) {
+                        if (matchError) {
+                            console.log("match error");
+                        } else if (!isMatch) {
+                            console.log("password not match");
+                            resToClient.render("login");
+                        } else {
+                            console.log("password match");
+                            resToClient.render("secrets");
+                        }
+                    });
                 } else {
                     console.log("user not found");
                     resToClient.redirect("/register");
