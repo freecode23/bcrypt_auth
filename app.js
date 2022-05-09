@@ -34,7 +34,7 @@ app.use(expressLayouts);
 
 // 4. body parser
 app.use(express.urlencoded({
-    extended: false
+    extended: true
 }));
 
 // 5. Session
@@ -61,10 +61,10 @@ app.use((req, res, next) => {
 });
 
 // 8. Routes
-// All the endpoints which are in index file are starting with /
+// All the endpoints which are in index.js file are starting with /
 app.use("/", require("./routes/index"));
 
-// All the endpoints which are in index file are starting with /users
+// All the endpoints which are in users.js file are starting with /users
 app.use("/users", require("./routes/users"));
 
 app.listen(3000, function() {
