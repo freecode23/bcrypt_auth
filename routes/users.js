@@ -19,8 +19,32 @@ router.get("/register", (req, res) => {
 router.post('/register', passport.authenticate('local-register', {
     successRedirect: '/users/login', // redirect to the secure profile section
     failureRedirect: '/users/register', // redirect back to the signup page if there is an error
-    failureFlash: true // allow flash messages
+    failureFlash: true
 }));
+
+
+// process the login forms
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local-login', {
+        successRedirect: '/dashboard', // redirect to the secure profile section
+        failureRedirect: '/users/login', // redirect back to the signup page if there is an error
+        failureFlash: true // allow flash messages
+    })(req, res, next);
+});
+
+
+// process the signup form
+router.get('/logout', (req, res) => {
+
+    req.logout();
+    req.flash("success_msg", "You are logged out");
+    res.redirect("/users/login");
+});
+
+
+
+module.exports = router;
+
 
 // router.post("/register", (req, res) => {
 //     // 1. field specified in ejs
@@ -93,13 +117,3 @@ router.post('/register', passport.authenticate('local-register', {
 //         });
 //     }
 // });
-
-
-// process the login forms
-router.post('/login', passport.authenticate('local-login', {
-    successRedirect: '/dashboard', // redirect to the secure profile section
-    failureRedirect: '/users/login', // redirect back to the signup page if there is an error
-    failureFlash: true // allow flash messages
-}));
-
-module.exports = router;

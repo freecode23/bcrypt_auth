@@ -1,6 +1,7 @@
 const LocalStrategy = require("passport-local").Strategy;
 
 // to check with database if it matches
+// @ts-ignore
 const mongoose = require("mongoose");
 
 // to decrypt the hash
@@ -38,9 +39,11 @@ module.exports = function(passport) {
 
                     // 1. validate input  
                     if (!req.body.name || !req.body.password2 || !email || !password) {
+                        // @ts-ignore
                         return done(err, false, req.flash("error_msg", "Please fill in all fields"));
 
                     } else if (password != req.body.password2) {
+                        // @ts-ignore
                         return done(err, false, req.flash("error_msg", "password does not match"));
                     }
 
@@ -61,6 +64,7 @@ module.exports = function(passport) {
                         });
 
                         newUser.save()
+                            // @ts-ignore
                             .then(user => {
                                 // @ts-ignore
                                 return done(null, newUser, req.flash("success_msg", "You are now registered and can log in"))
@@ -93,6 +97,7 @@ module.exports = function(passport) {
                     }
 
                     // match password input and user's actual password
+                    // @ts-ignore
                     bcrypt.compare(password, user.password, (err, isMatch) => {
                         if (isMatch) {
                             return done(null, user);

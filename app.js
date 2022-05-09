@@ -40,8 +40,8 @@ app.use(express.urlencoded({
 // 5. Session
 app.use(session({
     secret: "secret",
-    resave: true,
-    saveUninitialized: true
+    resave: false,
+    saveUninitialized: false
 }));;
 // 6. passport middleware
 app.use(passport.initialize());
