@@ -21,10 +21,6 @@ router.get("/register", (req, res) => {
 router.post("/register", (req, res) => {
     // 1. field specified in ejs
     const { name, email, password, password2 } = req.body;
-    console.log(name);
-    console.log(email);
-    console.log(password);
-    console.log(password2);
     let errors = [];
 
     // 2. check required fields
@@ -40,7 +36,7 @@ router.post("/register", (req, res) => {
     // 4. if there is error, display
     if (errors.length > 0) {
         res.render("register", {
-            // pass error message and the values
+            // pass error message and redisplay values
             errors,
             name,
             email,
@@ -77,26 +73,25 @@ router.post("/register", (req, res) => {
                     password: password
                 });
 
-                // hash the password
-                bcrypt.genSalt(10, (err, salt) => {
-                    bcrypt.hash(newUser.password, salt,
-                        (err, hashPassword) => {
-                            if (err) throw err;
 
-                            newUser.password = hashPassword;
+                // >> This flash doesnt work I want to prepopulate email and password
+                // newUser.save()
+                //     .then(user => {
+                //         req.flash("success_msg", "You are now registered and can log in");
+                //         res.render("login", {
+                //             email: user.email,
+                //             password: password
+                //         });
+                //     })
+                //     .catch(err => console.log(err));
 
-                            // add user to database
-                            newUser.save()
-                                .then(user => {
-
-                                    req.flash("success_msg", "You are now registered and can log in");
-
-                                    // create flash message during a session
-                                    res.redirect("/users/login");
-                                })
-                                .catch(err => console.log(err));
-                        });
-                });
+                // >> this flash works hash the password
+                newUser.save()
+                    .then(user => {
+                        req.flash("success_msg", "You are now registered and can log in");
+                        res.redirect("/users/login");
+                    })
+                    .catch(err => console.log(err));
                 console.log(">>>> new user: " + newUser);
             }
         });
@@ -104,7 +99,7 @@ router.post("/register", (req, res) => {
 });
 
 
-// process the login form
+// process the login forms
 router.post('/login', passport.authenticate('local-login', {
     successRedirect: '/dashboard', // redirect to the secure profile section
     failureRedirect: '/users/login', // redirect back to the signup page if there is an error

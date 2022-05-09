@@ -17,7 +17,7 @@ const passport = require("passport");
 app.set('view engine', 'ejs');
 
 // 2. config
-// - passport config
+// - passport config, pass in passport as argument
 require("./config/passport")(passport);
 
 
