@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require("bcrypt");
-const SALT_ROUNDS = 12;
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -10,41 +8,27 @@ const userSchema = new mongoose.Schema({
         dropDups: true
     },
 
+    email: {
+        type: String,
+        required: [true, "cannot add a user without email"],
+        unique: true,
+        dropDups: true
+    },
+
     password: {
         type: String,
-        required: [true, "cannot add a user without password"]
+        required: [true, "cannot add a user without password"],
+        unique: true,
+        dropDups: true
     },
-})
 
-// 4. bcrypt every user passwords
-userSchema.pre("save", async function preSave(next) {
-    const user = this; // this is the document to be saved
-
-    // if password has not been hashed
-    if (!user.isModified("password")) {
-        return next();
-    } else {
-        // else its a plain text
-        try {
-            const hash = await bcrypt.hash(user.password, SALT_ROUNDS);
-            user.password = hash;
-            return next();
-        } catch (err) {
-            return next(err);
-        }
+    date: {
+        type: Date,
+        default: Date.now
     }
 });
 
-
-// Create own compare password methods
-userSchema.methods.comparePassword = function comparePassword(userInputpass, callback) {
-    bcrypt.compare(userInputpass, this.password, function(error, isMatch) {
-        if (error) {
-            return callback(error);
-        } else {
-            callback(null, isMatch);
-        }
-    });
-}
 const User = mongoose.model("user", userSchema);
+
+// configure passportlocal
 module.exports = User;
