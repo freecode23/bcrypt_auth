@@ -1,16 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const User = require('../models/user');
+const passport = require("passport");
 
-// log in page
 // users/login 
 router.get("/login", (req, res) => {
     res.render("login");
 });
 
-// user model
-// get out of the route folder
-const User = require('../models/user');
 
 // >>>>>>> register page
 // get
@@ -104,5 +102,13 @@ router.post("/register", (req, res) => {
         });
     }
 });
+
+
+// process the login form
+router.post('/login', passport.authenticate('local-login', {
+    successRedirect: '/dashboard', // redirect to the secure profile section
+    failureRedirect: '/users/login', // redirect back to the signup page if there is an error
+    failureFlash: true // allow flash messages
+}));
 
 module.exports = router;

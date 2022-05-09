@@ -1,6 +1,6 @@
 //jshint esversion:6
 // --> 1 npm init -y
-// --> 2 npm i express ejs body-parser mongoose
+// --> 2 npm i express ejs mongoose passport passport-local bcrypt connec-flash express-ejs-layouts
 // --> 3 terminal: "brew services start mongodb-community@5.0"
 // --> 4 in terminal: mongo
 
@@ -11,10 +11,17 @@ const expressLayouts = require("express-ejs-layouts");
 const mongoose = require("mongoose");
 const flash = require("connect-flash");
 const session = require("express-session");
+const passport = require("passport");
+
 
 app.set('view engine', 'ejs');
 
-// 2. DB config
+// 2. config
+// - passport config
+require("./config/passport")(passport);
+
+
+// - db config
 const dbPath = require("./config/keys").MongoURI;
 
 mongoose
@@ -31,14 +38,16 @@ app.use(express.urlencoded({
 }));
 
 // 5. Session
-
 app.use(session({
     secret: "secret",
     resave: true,
     saveUninitialized: true
-}));
+}));;
+// 6. passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
-// 6. Set flash message
+// 7. Set flash message
 // connect flash middle ware
 app.use(flash());
 
@@ -47,11 +56,11 @@ app.use((req, res, next) => {
     // this global variable can be accessed in ejs
     res.locals.success_msg = req.flash("success_msg");
     res.locals.error_msg = req.flash("error_msg");
+    res.locals.error = req.flash("error");
     next();
 });
 
-// 7. Routes
-
+// 8. Routes
 // All the endpoints which are in index file are starting with /
 app.use("/", require("./routes/index"));
 
